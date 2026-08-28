@@ -35,8 +35,19 @@ export async function bootstrapClinic(clinicName: string) {
     }
 
     const result = await response.json();
-    if (!result.clinicId) throw new Error('Invalid response from bootstrap');
-    return result as { clinicId: string; clinicName: string; slug: string };
+
+if (!result.clinicId) {
+  throw new Error('Invalid response from bootstrap');
+}
+
+// IMPORTANT: save the active clinic locally
+localStorage.setItem('clinic_id', result.clinicId);
+
+return result as {
+  clinicId: string;
+  clinicName: string;
+  slug: string;
+};
   } catch (err) {
     if (err instanceof Error && err.name === 'AbortError') {
       throw new Error('Clinic setup timed out — please try again');
