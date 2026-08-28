@@ -1,0 +1,9 @@
+-- Fix mutable search_path on all custom functions
+ALTER FUNCTION public.slugify(text) SET search_path = public, pg_catalog;
+ALTER FUNCTION public.set_updated_at() SET search_path = public, pg_catalog;
+ALTER FUNCTION public.next_patient_number(uuid) SET search_path = public, pg_catalog;
+ALTER FUNCTION public.next_treatment_number(uuid) SET search_path = public, pg_catalog;
+ALTER FUNCTION public.next_appointment_number(uuid) SET search_path = public, pg_catalog;
+ALTER FUNCTION public.next_invoice_number(uuid) SET search_path = public, pg_catalog;
+ALTER FUNCTION public.next_payment_number(uuid) SET search_path = public, pg_catalog;
+ALTER FUNCTION public.next_lab_case_number(uuid) SET search_path = public, pg_catalog;

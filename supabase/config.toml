@@ -1,0 +1,3 @@
+[functions.clinic-bootstrap]
+verify_jwt = true
+entrypoint = "./functions/clinic-bootstrap/index.ts"

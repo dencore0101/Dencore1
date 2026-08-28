@@ -1,0 +1,1426 @@
+PHASE 12 — PATIENT BENEFITS + ADVANCED CLINICAL FOLLOW-UP SYSTEM
+
+IMPORTANT:
+Phases 0–11 are already completed. Do NOT rebuild, reset, or redesign the existing application.
+
+Inspect the current production code first. Add Phase 12 as an additive feature while preserving all existing functionality, database data, UI, authentication, RLS, billing, appointments, patient profiles, timeline, reports, and Hostinger/Supabase deployment architecture.
+
+DO NOT add Consent Management in this phase.
+
+Phase 12 consists of:
+PART A — Generic Patient Benefits Engine
+PART B — Advanced Clinical Follow-up & Reminder System
+
+The clinic owner has very little time for future development, so ordinary configuration must be possible from the application UI without editing code or requiring another Bolt session.
+
+==================================================
+PART A — GENERIC PATIENT BENEFITS ENGINE
+==================================================
+
+1. PURPOSE
+
+Create a completely configurable Patient Benefits system.
+
+The first use case is a Free Scaling Benefit, but do NOT hardcode scaling into the system.
+
+The system must eventually support:
+- Free Scaling
+- Free Consultation
+- Free Check-up
+- Free IOPA/RVG
+- Free Polishing
+- Free Procedure
+- Percentage Discount
+- Fixed Amount Discount
+- Implant maintenance
+- Custom Benefit
+
+The clinic owner must be able to create, edit, activate, deactivate and manage benefits entirely from the UI.
+
+2. MAIN NAVIGATION
+
+Add a new main module:
+
+Patient Benefits
+
+Subsections:
+- Overview
+- Benefit Programs
+- Eligible Patients
+- Redemptions
+- Expiring Soon
+- Settings
+
+Do not create a separate hardcoded "Scaling Bonus" module.
+
+3. BENEFIT PROGRAMS
+
+Allow the owner to create unlimited benefit programs.
+
+Each program should contain:
+- Program name
+- Description
+- Benefit type
+- Minimum qualifying amount
+- Eligibility calculation basis
+- Eligible procedures
+- Eligible procedure categories
+- Validity period
+- Number of benefits
+- Benefits per year
+- Carry-forward setting
+- Stacking setting
+- Start-date rule
+- Active/inactive status
+- Message template
+- Internal notes
+- Created date
+- Updated date
+
+Benefit type defaults:
+- Free Scaling
+- Free Consultation
+- Free Check-up
+- Free IOPA/RVG
+- Free Polishing
+- Free Procedure
+- Percentage Discount
+- Fixed Amount Discount
+- Custom Benefit
+
+Allow custom benefit types where appropriate.
+
+4. EXAMPLE FREE SCALING PROGRAM
+
+The owner should be able to create:
+
+3-Year Free Scaling
+
+Minimum qualifying amount:
+₹10,000
+
+Benefit:
+Free Scaling
+
+Validity:
+3 years
+
+Entitlement:
+1 free scaling per year
+
+This is only an example. Do NOT hardcode ₹10,000, 3 years, or 1 scaling.
+
+5. ELIGIBILITY RULES
+
+Configurable minimum amount.
+
+Calculation basis:
+- Treatment amount before discount
+- Treatment amount after discount
+- Amount actually paid
+- Amount invoiced
+
+Recommended default:
+Treatment amount after discount.
+
+The clinic owner can change it.
+
+Eligible procedures:
+- All procedures
+- Selected procedures
+
+Eligible categories:
+- All categories
+- Selected categories
+
+Example:
+Any treatment above ₹10,000 qualifies.
+Or:
+Only prosthetic treatments above ₹15,000 qualify.
+Or:
+Only RCT + crown packages qualify.
+
+Do not hardcode eligibility around one treatment.
+
+6. PAYMENT/COMPLETION CONDITION
+
+Allow configuration of when the benefit becomes active.
+
+Options:
+- When treatment is accepted
+- When treatment is completed
+- When full qualifying amount is paid
+- When configured percentage is paid
+- Custom clinic rule if practical
+
+Recommended default:
+Treatment completed + qualifying payment condition satisfied.
+
+Do not automatically grant a large benefit merely because a high-value treatment was quoted.
+
+7. COMBINING TREATMENTS
+
+Add:
+Can multiple qualifying treatments combine?
+
+Options:
+- No
+- Yes
+
+Default:
+No.
+
+If enabled, allow the owner to configure the period in which treatments can be combined.
+
+8. PATIENT BENEFIT RECORD
+
+Create a patient-level benefit record containing:
+- Patient
+- Benefit program
+- Qualifying treatment
+- Qualifying treatment amount
+- Eligibility date
+- Start date
+- Expiry date
+- Status
+- Notes
+- Created by
+- Created date
+- Updated date
+
+Statuses:
+- Active
+- Expired
+- Revoked
+- Completed
+- Cancelled
+
+Never permanently delete historical redeemed benefits.
+
+9. INDIVIDUAL ENTITLEMENTS
+
+Do NOT simply store "Valid for 3 years".
+
+Create individual entitlement records.
+
+Example:
+2026 — Available
+2027 — Available
+2028 — Available
+
+Each entitlement must contain:
+- Benefit ID
+- Period/year
+- Valid from
+- Valid until
+- Status
+- Redeemed date
+- Redeemed treatment
+- Redeemed appointment
+- Redeemed visit
+- Notes
+
+This prevents duplicate use.
+
+10. REDEMPTION
+
+When a patient uses a benefit:
+1. Verify benefit is active.
+2. Verify current date is within validity.
+3. Verify an unused entitlement exists.
+4. Create redemption record.
+5. Link redemption to procedure.
+6. Link to treatment where applicable.
+7. Link to visit.
+8. Link to appointment where applicable.
+9. Mark entitlement as redeemed.
+10. Add event to patient timeline.
+
+Do NOT create a fake negative payment.
+
+A free procedure should be recorded as a benefit-covered procedure/redemption with ₹0 patient charge where appropriate.
+
+Do not corrupt revenue or payment reports.
+
+11. REVERSE REDEMPTION
+
+Authorized users can reverse a mistaken redemption.
+
+Do not delete the redemption.
+
+Instead:
+- Mark original redemption as reversed.
+- Restore entitlement where appropriate.
+- Record reversal date.
+- Record actor.
+- Require reason.
+- Add audit event.
+
+12. PATIENT PROFILE — BENEFITS
+
+Add a Benefits tab/section to the existing unified patient profile.
+
+Show:
+- Active Benefits
+- Available Entitlements
+- Expiring Benefits
+- Used Benefits
+- Expired Benefits
+- Revoked Benefits
+
+Example:
+
+FREE SCALING
+Valid until: 15 Aug 2029
+
+2026: Used
+2027: Available
+2028: Available
+
+Actions:
+- Book Scaling
+- Redeem
+- WhatsApp
+- Call
+- Copy Number
+- View History
+
+13. WHATSAPP / PHONE / COPY
+
+Every patient benefit record must provide:
+
+WhatsApp:
+Open a WhatsApp conversation using the patient's normalized number.
+
+Call:
+Open the device's phone dialer.
+
+Copy:
+Copy the patient's phone number to clipboard.
+
+The phone number itself should also be clickable.
+
+Show confirmation after copying:
+"Number copied"
+
+Do not claim a WhatsApp message was sent unless an actual messaging provider confirms it.
+
+For V1, WhatsApp should be user initiated.
+
+14. WHATSAPP MESSAGE TEMPLATES
+
+Create:
+Settings → Patient Benefits → Message Templates
+
+Templates:
+- Newly Eligible
+- Benefit Reminder
+- Expiring in 90 Days
+- Expiring in 30 Days
+- Expiring in 7 Days
+- Benefit Redeemed
+- Annual Benefit Available
+
+Allow:
+- Edit
+- Preview
+- Reset to default
+- Copy message
+- Open WhatsApp
+
+15. MESSAGE VARIABLES
+
+Support:
+{{patient_name}}
+{{clinic_name}}
+{{benefit_name}}
+{{expiry_date}}
+{{remaining_benefits}}
+{{doctor_name}}
+{{clinic_phone}}
+{{clinic_address}}
+{{booking_link}}
+
+Unknown variables must not break the message.
+
+16. BENEFIT DASHBOARD
+
+Show:
+- Active Benefits
+- New Eligible Patients
+- Benefits Expiring This Month
+- Benefits Expiring in 30 Days
+- Benefits Expiring in 90 Days
+- Available Entitlements
+- Redeemed Benefits
+- Expired Benefits
+- Never Redeemed
+
+Clicking a card opens the appropriate filtered list.
+
+Do not use fake statistics.
+
+17. ELIGIBLE PATIENTS TABLE
+
+Display:
+Patient | Benefit | Qualifying Amount | Start | Expiry | Remaining | Status | Actions
+
+Actions:
+- Open Patient
+- WhatsApp
+- Call
+- Copy
+- Book
+- Redeem
+- View History
+
+Filters:
+- Benefit program
+- Status
+- Expiry period
+- Dentist
+- Date range
+
+Search:
+- Patient name
+- Patient number
+- Mobile
+
+18. EXPIRING BENEFITS
+
+Create:
+Expiring Soon
+
+Filters:
+- 7 days
+- 30 days
+- 60 days
+- 90 days
+- Custom
+
+Show:
+- Patient
+- Benefit
+- Expiry
+- Remaining benefits
+- Last contact
+- Actions
+
+19. PROGRAM MANAGEMENT
+
+Owner can:
+- Add program
+- Edit program
+- Activate
+- Deactivate
+- Archive
+- Delete when safe
+
+Deactivating a program must NOT remove existing patient benefits.
+
+It only prevents new automatic eligibility.
+
+Historical benefits, entitlements and redemptions remain available.
+
+If historical data exists, prefer Archive/Deactivate over destructive deletion.
+
+20. PATIENT-LEVEL MANAGEMENT
+
+Authorized users can:
+- Add benefit manually
+- Revoke benefit
+- Extend expiry
+- Cancel benefit
+- Add entitlement
+- Cancel unused entitlement
+- Redeem
+- Reverse redemption
+
+Every manual change must record:
+- User
+- Date/time
+- Reason
+
+21. STACKING
+
+Add configurable stacking.
+
+Default:
+OFF
+
+If an active benefit already exists and another qualifying treatment occurs, display:
+
+"Patient already has an active benefit until [date]. A new qualifying benefit is available."
+
+Options:
+- Ignore
+- Add separate benefit
+- Extend existing benefit
+
+Never silently stack benefits.
+
+22. CARRY FORWARD
+
+Add:
+Carry-forward unused benefits?
+
+Yes / No
+
+Default:
+No
+
+If enabled, clearly show how many unused entitlements are carried forward.
+
+Do not assume carry-forward automatically.
+
+23. BENEFIT DATABASE
+
+Create normalized tables such as:
+patient_benefit_programs
+patient_benefits
+patient_benefit_entitlements
+patient_benefit_redemptions
+benefit_message_templates
+
+Fields should include where applicable:
+id
+clinic_id
+patient_id
+program_id
+treatment_id
+treatment_item_id
+appointment_id
+visit_id
+procedure_id
+qualifying_amount
+start_date
+expiry_date
+status
+notes
+created_by
+created_at
+updated_at
+
+Apply Supabase RLS.
+
+Every record must be clinic-scoped.
+
+24. INTEGRATION
+
+Integrate with:
+- Patients
+- Unified Patient Profile
+- Treatments
+- Treatment Items
+- Visits
+- Appointments
+- Billing
+- Clinical Timeline
+- Reports
+
+Do not unnecessarily modify completed Phase 0–11 functionality.
+
+25. FINANCIAL REPORTING
+
+Benefits must not corrupt financial reporting.
+
+A free scaling benefit should not appear as:
+- negative payment
+- negative revenue
+- fake expense
+
+Instead reports should separately show:
+- Benefits Granted
+- Benefits Redeemed
+- Benefit Utilization
+- Free Procedures Provided
+
+If the clinic later wants internal cost tracking for free treatment, keep that separate from patient billing.
+
+26. BENEFIT REPORTS
+
+Add:
+- Benefits Granted
+- Benefits Redeemed
+- Benefits Expired
+- Benefits Revoked
+- Benefits by Program
+- Benefits by Month
+- Benefit Utilization Rate
+- Free Scaling Sessions Used
+- Patients Never Redeeming Benefits
+
+Clearly define every metric.
+
+==================================================
+PART B — ADVANCED CLINICAL FOLLOW-UP & REMINDER SYSTEM
+==================================================
+
+27. IMPORTANT DISTINCTION
+
+The existing application has Follow-ups.
+
+Improve this into a complete Clinical Follow-up & Reminder System.
+
+This is NOT preventive recall.
+
+A clinical follow-up means:
+"The patient needs to be contacted or seen again on a specific date/time because of treatment or a clinical event."
+
+Examples:
+- RCT review
+- Dressing change
+- Extraction review
+- Suture removal
+- Post-operative review
+- Crown delivery
+- Denture adjustment
+- Implant review
+- Periodontal review
+- Orthodontic review
+- Medication review
+- General review
+- Custom follow-up
+
+Do not turn this into a preventive recall system.
+
+28. FOLLOW-UP CALENDAR
+
+Create a proper calendar inside:
+Follow-ups
+
+Views:
+- Day
+- Week
+- Month
+- List
+
+Quick filters:
+- Today
+- Tomorrow
+- This Week
+- Overdue
+- Pending
+- Completed
+- By Dentist
+- By Treatment
+
+Each calendar/list item shows:
+- Patient
+- Follow-up type
+- Treatment
+- Date
+- Time
+- Status
+- Priority
+- Assigned dentist/staff
+- Actions
+
+29. FOLLOW-UP ACTIONS
+
+Every follow-up should provide:
+- WhatsApp
+- Call
+- Copy Number
+- Copy Message
+- Mark Contacted
+- Complete
+- Reschedule
+- Snooze
+- Open Patient
+
+30. FOLLOW-UP FIELDS
+
+Every follow-up should support:
+- Patient
+- Treatment
+- Treatment Item
+- Visit
+- Follow-up Type
+- Reason
+- Date
+- Time
+- Assigned Dentist
+- Assigned Staff
+- Priority
+- Status
+- Notes
+- Reminder Policy
+- Created By
+- Created Date
+- Last Contacted
+- Contact Outcome
+
+Statuses:
+- Pending
+- Contacted
+- Scheduled
+- Completed
+- Unable to Reach
+- Rescheduled
+- Snoozed
+- Cancelled
+- Overdue
+- No Show
+
+Avoid contradictory statuses.
+
+31. FOLLOW-UP TYPE MASTER
+
+Create:
+Settings → Follow-up Types
+
+Default types:
+- RCT Review
+- Dressing Change
+- Extraction Review
+- Suture Removal
+- Post-Operative Review
+- Crown Delivery
+- Denture Adjustment
+- Implant Review
+- Periodontal Review
+- Orthodontic Review
+- Medication Review
+- General Review
+- Custom
+
+The owner can:
+- Add
+- Edit
+- Deactivate
+- Delete when safe
+
+Each type can have a default reminder policy.
+
+32. REMINDER POLICIES
+
+Do NOT use one fixed reminder schedule for every follow-up.
+
+Allow reminder policy per follow-up type and per individual follow-up.
+
+Recommended default — Routine:
+- 3 days before
+- 1 day before
+- Same day
+
+Short-term / important:
+- 1 day before
+- Same day
+- Optional 2-hour reminder
+
+Long-term:
+- 7 days before
+- 1 day before
+- Same day
+
+These are defaults only.
+
+Everything must be configurable.
+
+33. CUSTOM REMINDER
+
+Allow the user to choose:
+- 7 days before
+- 3 days before
+- 1 day before
+- 6 hours before
+- 2 hours before
+- Same day
+- Custom date/time
+
+The user should be able to add multiple reminder points.
+
+Example:
+Reminder 1: 7 days before
+Reminder 2: 1 day before
+Reminder 3: 6 hours before
+
+No code changes should be required.
+
+34. SAME-DAY REMINDER
+
+Do not force all same-day reminders to 8 AM.
+
+Support:
+
+Option A:
+X hours before
+
+Example:
+Follow-up: 20 Aug, 5:00 PM
+Same-day reminder: 6 hours before → approximately 11:00 AM
+
+Option B:
+Fixed clinic time
+
+Example:
+Same-day reminders → 9:00 AM
+
+Allow the clinic owner to choose the default.
+
+35. REMINDER ENGINE
+
+Implement a reliable reminder state machine:
+
+Follow-up created
+↓
+Calculate reminder dates
+↓
+Reminder becomes due
+↓
+Is follow-up still active?
+↓
+YES → prepare/send reminder
+NO → cancel reminder
+↓
+Next reminder
+↓
+Follow-up date
+↓
+Completed?
+YES → stop
+NO → overdue/no-show workflow
+
+Critical behavior:
+
+If a follow-up is:
+- Completed
+- Cancelled
+- Rescheduled
+
+then all obsolete future reminders must stop.
+
+If rescheduled:
+1. Cancel old reminders.
+2. Update follow-up date/time.
+3. Generate new reminder schedule.
+4. Preserve original history.
+
+Never send a reminder for the old date after rescheduling.
+
+36. REMINDER SENDING ARCHITECTURE
+
+The core system must work without a paid messaging provider.
+
+Separate:
+Reminder created
+from:
+Reminder actually sent
+
+Possible statuses:
+- Scheduled
+- Ready
+- Sent
+- Failed
+- Cancelled
+- Skipped
+
+Do not claim that a WhatsApp/SMS/email was sent unless the configured provider confirms it.
+
+For V1, WhatsApp can remain user-initiated.
+
+37. FOLLOW-UP WHATSAPP
+
+Every follow-up should have:
+
+WhatsApp:
+Open WhatsApp with a prepared message where supported.
+
+Copy Message:
+Copy message to clipboard.
+
+Call:
+Open phone dialer.
+
+Copy Number:
+Copy patient number.
+
+Use normalized phone numbers.
+
+38. FOLLOW-UP MESSAGE TEMPLATES
+
+Create:
+Settings → Follow-ups → Message Templates
+
+Templates:
+- Follow-up Confirmation
+- 7-Day Reminder
+- 3-Day Reminder
+- 1-Day Reminder
+- Same-Day Reminder
+- Overdue Follow-up
+- Rescheduled Follow-up
+- Unable to Reach
+- Custom
+
+Allow:
+- Edit
+- Preview
+- Reset
+- Copy
+- WhatsApp
+
+39. MESSAGE VARIABLES
+
+Support:
+{{patient_name}}
+{{followup_type}}
+{{followup_date}}
+{{followup_time}}
+{{treatment_name}}
+{{doctor_name}}
+{{clinic_name}}
+{{clinic_phone}}
+{{clinic_address}}
+{{booking_link}}
+
+Example:
+
+"Hi {{patient_name}}, your {{followup_type}} with {{doctor_name}} is scheduled for {{followup_date}} at {{followup_time}}. Please confirm or contact us if you need to reschedule."
+
+Do not use guilt-based wording.
+
+40. PSYCHOLOGY / RETENTION
+
+The reminder system should maximize attendance and retention without becoming spammy.
+
+Use:
+1. Specific date/time.
+2. Patient name.
+3. Reason for follow-up.
+4. Easy action.
+5. Reschedule option.
+6. Stop reminders after confirmation/completion.
+7. Avoid guilt-based language.
+8. Avoid unnecessary repeated messages.
+9. Use human follow-up for overdue patients.
+10. Make rescheduling easier than ignoring the message.
+
+41. OVERDUE FOLLOW-UP WORKFLOW
+
+If a follow-up is missed:
+
+Status:
+Overdue
+
+Create an Overdue Follow-up Worklist.
+
+Show:
+- Patient
+- Treatment
+- Follow-up
+- Original date
+- Days overdue
+- Last contact
+- Contact outcome
+- Assigned staff
+
+Actions:
+- WhatsApp
+- Call
+- Copy
+- Reschedule
+- Mark Contacted
+- Snooze
+- Complete
+
+42. NO-SHOW
+
+If patient does not attend:
+
+Set:
+No Show
+
+Provide:
+Reschedule Follow-up
+
+When rescheduled:
+- preserve original no-show
+- create/modify follow-up appropriately
+- cancel old reminders
+- generate new reminders
+- preserve audit history
+
+43. SNOOZE
+
+Allow:
+- Snooze 1 day
+- Snooze 3 days
+- Snooze 7 days
+- Snooze 30 days
+- Custom
+
+Snoozing must not destroy original follow-up history.
+
+44. PATIENT PROFILE INTEGRATION
+
+Add a Follow-ups section/tab to the unified patient profile.
+
+Show:
+- Next Follow-up
+- Overdue Follow-ups
+- Upcoming Follow-ups
+- Completed Follow-up History
+
+Timeline events:
+- Follow-up created
+- Reminder scheduled
+- Reminder sent where supported
+- Contact attempted
+- Contact successful
+- Rescheduled
+- Snoozed
+- Completed
+- Cancelled
+- No Show
+
+45. VISIT INTEGRATION
+
+When completing a clinical visit, provide:
+Add Follow-up
+
+Prefill:
+- Patient
+- Treatment
+- Treatment item
+- Dentist
+- Visit
+
+Allow:
+- Follow-up type
+- Date
+- Time
+- Reminder policy
+- Notes
+
+Example:
+Extraction completed
+→ Add Follow-up
+→ Post-Operative Review
+→ 7 days
+→ 5 PM
+
+Save without leaving the visit workflow.
+
+46. APPOINTMENT INTEGRATION
+
+A follow-up can optionally create an appointment.
+
+When converted:
+- Link follow-up to appointment.
+- Preserve follow-up history.
+- Stop non-appointment follow-up reminders.
+- Use existing appointment reminder workflow where appropriate.
+
+Do not create duplicate reminders from both systems.
+
+47. DASHBOARD INTEGRATION
+
+Add dashboard cards:
+- Follow-ups Today
+- Follow-ups Tomorrow
+- Overdue Follow-ups
+- Uncontacted Follow-ups
+- Follow-ups This Week
+
+Clicking a card opens the correct filtered Follow-up screen.
+
+Do not show fake values.
+
+48. FOLLOW-UP REPORTS
+
+Add:
+- Follow-ups Created
+- Follow-ups Completed
+- Follow-ups Overdue
+- No Shows
+- Rescheduled
+- Unable to Reach
+- Contacted
+- Completion Rate
+- Follow-ups by Treatment Type
+- Follow-ups by Dentist
+
+Clearly define each metric.
+
+Do not label something "retention rate" unless the calculation actually measures retention.
+
+49. DATABASE
+
+Use/extend:
+follow_ups
+
+Create/support:
+follow_up_types
+follow_up_reminder_policies
+follow_up_reminders
+follow_up_contacts
+
+Important follow-up fields:
+id
+clinic_id
+patient_id
+treatment_id
+treatment_item_id
+visit_id
+appointment_id
+follow_up_type_id
+due_date
+due_time
+status
+priority
+assigned_dentist_id
+assigned_staff_id
+notes
+reminder_policy_id
+created_by
+created_at
+updated_at
+
+Reminder fields:
+id
+clinic_id
+follow_up_id
+scheduled_for
+reminder_type
+status
+sent_at
+cancelled_at
+provider
+provider_message_id
+error
+created_at
+updated_at
+
+Contact fields:
+id
+clinic_id
+follow_up_id
+patient_id
+contacted_by
+contact_method
+contacted_at
+outcome
+notes
+
+Apply proper Supabase RLS.
+
+Every record must be clinic scoped.
+
+50. PATIENT BENEFITS + FOLLOW-UP RELATIONSHIP
+
+These are independent systems.
+
+Example:
+
+Treatment completed
+↓
+Patient qualifies for benefit
+↓
+Benefit entitlement created
+
+Separately:
+
+Treatment completed
+↓
+Clinical follow-up created
+↓
+Reminder schedule created
+
+If patient later uses the benefit:
+Benefit redemption
+↓
+Scaling procedure
+↓
+Optional next follow-up
+
+Do not automatically create a follow-up for every benefit unless the clinic configures it.
+
+51. SECURITY AND AUDIT
+
+All benefit and follow-up changes must respect existing clinic membership/RLS.
+
+Audit Benefits:
+- Created
+- Edited
+- Revoked
+- Extended
+- Redeemed
+- Reversed
+- Program activated/deactivated
+
+Audit Follow-ups:
+- Created
+- Edited
+- Rescheduled
+- Completed
+- Cancelled
+- Snoozed
+- No-show
+- Reminder cancelled
+- Contact recorded
+
+Never allow one clinic to access another clinic's data.
+
+52. MOBILE UX
+
+Both modules must work properly on mobile.
+
+Do not use wide desktop tables that break the screen.
+
+On mobile use responsive cards containing:
+- Patient
+- Benefit/Follow-up
+- Date
+- Status
+- Actions
+
+Actions should remain easy to tap.
+
+53. PERFORMANCE
+
+Do not load every historical follow-up or benefit into the browser.
+
+Use:
+- Pagination
+- Date filtering
+- Indexed queries
+- Server-side filtering where appropriate
+- Debounced patient search
+
+Calendar queries should retrieve only the relevant date range.
+
+==================================================
+TESTING — PATIENT BENEFITS
+==================================================
+
+Test all of the following:
+
+1. Create benefit program.
+2. Edit program.
+3. Deactivate program.
+4. Create qualifying treatment.
+5. Verify eligibility.
+6. Verify entitlement creation.
+7. Verify expiry.
+8. Redeem benefit.
+9. Verify billing remains correct.
+10. Verify timeline.
+11. Test WhatsApp.
+12. Test Call.
+13. Test Copy Number.
+14. Reverse redemption.
+15. Verify audit trail.
+16. Test expired benefit.
+17. Test stacking OFF.
+18. Test stacking ON.
+19. Test multiple years.
+20. Test manual benefit.
+21. Test program deactivation without deleting existing benefits.
+22. Test carry-forward.
+23. Test different eligibility calculation bases.
+24. Test selected procedures.
+25. Test selected categories.
+
+==================================================
+TESTING — FOLLOW-UPS
+==================================================
+
+Test:
+
+1. Create follow-up.
+2. Select follow-up type.
+3. Set date.
+4. Set time.
+5. Apply reminder policy.
+6. Verify reminder schedule.
+7. Verify 3-day reminder.
+8. Verify 1-day reminder.
+9. Verify same-day reminder.
+10. Verify custom reminder.
+11. Complete follow-up.
+12. Confirm future reminders stop.
+13. Reschedule follow-up.
+14. Confirm old reminders stop.
+15. Confirm new reminders are generated.
+16. Cancel follow-up.
+17. Confirm reminders stop.
+18. Mark no-show.
+19. Create overdue follow-up.
+20. Verify overdue worklist.
+21. Test WhatsApp.
+22. Test Call.
+23. Test Copy Number.
+24. Test Copy Message.
+25. Create follow-up from completed visit.
+26. Convert follow-up to appointment.
+27. Verify duplicate reminders are not created.
+28. Test snooze.
+29. Test mobile calendar.
+30. Test RLS.
+
+==================================================
+PRODUCTION VERIFICATION
+==================================================
+
+Before declaring Phase 12 complete:
+
+Run:
+- TypeScript checks
+- Lint
+- Unit tests
+- Relevant integration tests
+- Production build
+
+Run:
+npm run build
+
+Fix every build error.
+
+Check:
+- Supabase migrations
+- RLS
+- mobile layout
+- desktop layout
+- loading states
+- empty states
+- error states
+- duplicate submission prevention
+- database constraints
+- audit records
+
+Do not leave fake buttons or placeholder screens.
+
+==================================================
+DOCUMENTATION
+==================================================
+
+Update:
+PROJECT_STATUS.md
+CHANGELOG.md
+README.md
+
+Document:
+- New tables
+- Migrations
+- New settings
+- Benefit configuration
+- Follow-up reminder configuration
+- WhatsApp behavior
+- Deployment requirements
+- Any manual Supabase steps
+
+==================================================
+FINAL CONFIGURATION PRINCIPLE
+==================================================
+
+The clinic owner must be able to change these from the application UI.
+
+BENEFITS:
+- Benefit names
+- Benefit types
+- Minimum amount
+- Eligibility basis
+- Eligible procedures
+- Validity
+- Number of benefits
+- Benefits per year
+- Carry-forward
+- Stacking
+- Start-date rule
+- Messages
+- Active/inactive status
+
+FOLLOW-UPS:
+- Follow-up types
+- Default follow-up intervals
+- Reminder timing
+- Number of reminders
+- Same-day reminder timing
+- Message templates
+- Assigned staff/dentist
+- Priority
+- Snooze options
+
+No future Bolt session should be required for ordinary clinic configuration.
+
+==================================================
+DO NOT MODIFY
+==================================================
+
+Do not unnecessarily modify or rebuild:
+- completed Phase 0–11 modules
+- existing authentication
+- existing billing calculations
+- existing patient records
+- existing appointment records
+- existing reports
+- existing deployment architecture
+- existing Supabase configuration
+
+Only add or modify existing tables/components where required for proper integration.
+
+If a migration is required, create a safe migration.
+
+If an existing Follow-up table already contains some of these fields, extend it rather than creating duplicate competing structures.
+
+==================================================
+FINAL ACCEPTANCE CRITERIA
+==================================================
+
+PATIENT BENEFITS:
+
+A clinic owner can create a benefit such as:
+
+Treatment ≥ ₹10,000 → 1 free scaling/year → 3 years
+
+without editing code.
+
+A qualifying patient automatically receives the configured benefit.
+
+The patient profile shows the benefit.
+
+Individual yearly entitlements are tracked.
+
+Scaling can be redeemed.
+
+Redemption is linked to treatment/visit/appointment.
+
+The patient cannot accidentally redeem the same entitlement twice.
+
+WhatsApp, Call and Copy Number work.
+
+The owner can customize messages.
+
+Programs can be activated/deactivated.
+
+Existing benefits remain after program deactivation.
+
+Benefits appear correctly in reports without corrupting revenue.
+
+FOLLOW-UPS:
+
+A dentist can finish a visit and create:
+
+Post-operative review → 7 days → 5:00 PM
+
+The system automatically calculates configured reminders.
+
+The patient appears on the Follow-up Calendar.
+
+WhatsApp, Call and Copy Number are available.
+
+Completing the follow-up stops remaining reminders.
+
+Rescheduling cancels old reminders and creates the new schedule.
+
+No-shows become actionable overdue follow-ups.
+
+The receptionist has a clear overdue worklist.
+
+Everything works on desktop and mobile.
+
+The production build succeeds.
+
+DO NOT add Consent Management in Phase 12.
