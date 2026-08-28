@@ -45,7 +45,15 @@ export default function SignUp() {
       // Store clinic name as pending BEFORE bootstrap, so it can be retried
       // on next sign-in if this attempt fails or times out
       localStorage.setItem('pending_clinic_name', clinicName);
-      await withTimeout(bootstrapClinic(clinicName), BOOTSTRAP_TIMEOUT_MS, 'Clinic setup');
+      const result = await withTimeout(
+  bootstrapClinic(clinicName),
+  BOOTSTRAP_TIMEOUT_MS,
+  'Clinic setup',
+);
+
+localStorage.setItem('clinic_id', result.clinicId);
+
+navigate('/app');
       localStorage.removeItem('pending_clinic_name');
       navigate('/app');
     } catch (err) {
